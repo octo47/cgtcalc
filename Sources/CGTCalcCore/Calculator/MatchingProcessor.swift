@@ -104,7 +104,7 @@ class MatchingProcessor {
           restructureMultiplier: restructureMultiplier)
       }
 
-      self.logger.info("Matched \(disposal) against \(acquisition).")
+      self.logger.info("Matched by \(kind): \(disposal) against \(acquisition).")
 
       // Now the disposal and acquisition will have the same amount
       self.state.pendingAcquisitions.remove(at: acquisitionIndex)

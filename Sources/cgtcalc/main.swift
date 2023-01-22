@@ -20,6 +20,9 @@ struct CGTCalc: ParsableCommand {
 
   @Option(name: .shortAndLong, help: "Output file")
   var outputFile: String?
+  
+  @Option(name: .shortAndLong, help: "Path to a hrmc monthly rates xml files")
+  var hrmc: String?
 
   static var configuration = CommandConfiguration(commandName: "cgtcalc", version: VERSION)
 
@@ -30,8 +33,15 @@ struct CGTCalc: ParsableCommand {
     }
 
     do {
+
+      let parser: DefaultParser
+      if let hrmcPath = hrmc {
+        parser = try DefaultParser(currencyConverter: DefaultCurrencyConverter.loadHRMC(logger: logger, path: URL(string: hrmcPath)!))
+      } else {
+        parser = DefaultParser()
+      }
+
       let data = try String(contentsOfFile: filename)
-      let parser = DefaultParser()
       let input = try parser.calculatorInput(fromData: data)
 
       let calculator = try Calculator(input: input, logger: logger)

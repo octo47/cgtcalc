@@ -135,17 +135,29 @@ public class TextPresenter: Presenter {
       return "NONE"
     }
 
-    return self.result.input.transactions.reduce(into: "") { result, transaction in
-      result += "\(dateFormatter.string(from: transaction.date)) "
-      switch transaction.kind {
-      case .Buy:
-        result += "BOUGHT "
-      case .Sell:
-        result += "SOLD "
+//    return self.result.input.transactions.reduce(into: "") { result, transaction in
+//      result += "\(dateFormatter.string(from: transaction.date)) "
+//      switch transaction.kind {
+//      case .Buy:
+//        result += "BOUGHT "
+//      case .Sell:
+//        result += "SOLD "
+//      }
+//      result +=
+//        "\(transaction.amount) of \(transaction.asset) at £\(transaction.price) with £\(transaction.expenses) expenses\n"
+//    }
+    // input compatible output
+    return self.result.input.transactions.sorted{ $0.date < $1.date }.reduce(into: "") { result, transaction in
+        switch transaction.kind {
+        case .Buy:
+          result += "BUY "
+        case .Sell:
+          result += "SELL "
+        }
+        result +=
+          "\(dateFormatter.string(from: transaction.date)) \(transaction.asset) \(transaction.amount) £\(transaction.price) £\(transaction.expenses)\n"
       }
-      result +=
-        "\(transaction.amount) of \(transaction.asset) at £\(transaction.price) with £\(transaction.expenses) expenses\n"
-    }
+
   }
 
   private func assetEventsTable() -> String {
@@ -153,7 +165,7 @@ public class TextPresenter: Presenter {
       return "NONE"
     }
 
-    return self.result.input.assetEvents.reduce(into: "") { result, assetEvent in
+    return self.result.input.assetEvents.sorted{ $0.date < $1.date }.reduce(into: "") { result, assetEvent in
       result += "\(dateFormatter.string(from: assetEvent.date)) \(assetEvent.asset) "
       switch assetEvent.kind {
       case .CapitalReturn(let amount, let value):

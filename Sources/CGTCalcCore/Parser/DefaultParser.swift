@@ -15,6 +15,7 @@ enum ParserError: Error {
   case InvalidPrice(String)
   case InvalidExpenses(String)
   case InvalidValue(String)
+  case UnknownCurrency(String)
 }
 
 public class CalculatorInput {
@@ -29,12 +30,14 @@ public class CalculatorInput {
 
 public class DefaultParser {
   private let dateFormatter: DateFormatter
+  private let currencyConverter: CurrencyConverter
 
-  public init() {
+  public init(currencyConverter: CurrencyConverter = DefaultCurrencyConverter(logger: BasicLogger(), defaultCurrency: "£")) {
     self.dateFormatter = DateFormatter()
     self.dateFormatter.locale = Locale(identifier: "en_US_POSIX")
     self.dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
     self.dateFormatter.dateFormat = "dd/MM/yyyy"
+      self.currencyConverter = currencyConverter
   }
 
   public func calculatorInput(fromData data: String) throws -> CalculatorInput {
@@ -86,11 +89,11 @@ public class DefaultParser {
       throw ParserError.InvalidAmount(String(data))
     }
 
-    guard let price = Decimal(string: splitData[4]) else {
+    guard let price = try self.currencyConverter.convertCurrency(date: date, string: splitData[4]) else {
       throw ParserError.InvalidPrice(String(data))
     }
 
-    guard let expenses = Decimal(string: splitData[5]) else {
+    guard let expenses = try self.currencyConverter.convertCurrency(date: date, string: splitData[5]) else {
       throw ParserError.InvalidExpenses(String(data))
     }
 
@@ -129,7 +132,7 @@ public class DefaultParser {
       throw ParserError.InvalidValue(data.joined(separator: " "))
     }
 
-    guard let value = Decimal(string: data[4]) else {
+    guard let value = try self.currencyConverter.convertCurrency(date: date, string: data[4]) else {
       throw ParserError.InvalidValue(data.joined(separator: " "))
     }
 
@@ -152,7 +155,7 @@ public class DefaultParser {
       throw ParserError.InvalidValue(data.joined(separator: " "))
     }
 
-    guard let value = Decimal(string: data[4]) else {
+    guard let value = try self.currencyConverter.convertCurrency(date: date, string: data[4]) else {
       throw ParserError.InvalidValue(data.joined(separator: " "))
     }
 
